@@ -24,19 +24,23 @@ data = '{ "detail":{"model":"Shopv2","action":"getDetail","parameters":{"gid":"'
 last = 0;
 
 while 1:
+    try:
+        res = requests.post("https://home.mi.com/app/shop/pipe", data={"data": data}, headers=headers)
+        result = json.loads(res.text)
+        num = result["result"]["detail"]["data"]["good"]["saled"]
+        print num, " +", (int(num) - int(last))
 
-    res = requests.post("https://home.mi.com/app/shop/pipe", data={"data": data}, headers=headers)
-    result = json.loads(res.text)
-    num = result["result"]["detail"]["data"]["good"]["saled"]
-    print num, " +", (int(num) - int(last))
+        localtime = time.asctime( time.localtime(time.time()))
 
-    localtime = time.asctime( time.localtime(time.time()))
+        fo = open(file_name, "a")
+        add = (int(num) - int(last))
+        fo.write(str(num) + " +" + str(add) + "  " + str(localtime) + "\n")
+        fo.close()
 
-    fo = open(file_name, "a")
-    add = (int(num) - int(last))
-    fo.write(str(num) + " +" + str(add) + "  " + str(localtime) + "\n")
-    fo.close()
+        last = num
 
-    last = num
-    # 查询速度
-    time.sleep(sleep)
+    except Exception as e:
+        print e
+    finally:
+        # 查询速度
+        time.sleep(sleep)
