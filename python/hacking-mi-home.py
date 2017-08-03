@@ -1,3 +1,4 @@
+#coding=utf-8
 # 循环查询米家众筹物品卖出数量，保存到文件
 # author: LLQ
 
@@ -13,12 +14,12 @@ sleep = 10
 # 要保存的文件名
 file_name = 'fang-mi.js'
 
-headers = { "Referer":"https://home.mi.com/detail?gid=" + good_id,
+headers = { "Referer":"https://home.mi.com/detail?gid=" + str(good_id),
             "User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36",
             "content-type":"application/x-www-form-urlencoded"
            }
 
-data = '{ "detail":{"model":"Shopv2","action":"getDetail","parameters":{"gid":"' + good_id + '"}},"comment":{"model":"Comment","action":"getList","parameters":{"goods_id":"' + good_id + '","orderby":"1","pageindex":"0","pagesize":3} },"activity":{"model":"Activity","action":"getAct","parameters":{"gid":"' + good_id + '"}}}'
+data = '{ "detail":{"model":"Shopv2","action":"getDetail","parameters":{"gid":"' + str(good_id) + '"}},"comment":{"model":"Comment","action":"getList","parameters":{"goods_id":"' + str(good_id) + '","orderby":"1","pageindex":"0","pagesize":3} },"activity":{"model":"Activity","action":"getAct","parameters":{"gid":"' + str(good_id) + '"}}}'
 
 last = 0;
 
