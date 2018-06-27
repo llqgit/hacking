@@ -2,7 +2,7 @@
  * base-d to base-62(default)
  * @param  {[type]} t                                          [number string]
  * @param  {String} [l='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'] [description]
- * @return {[type]}                                            [description]
+ * @return {[type]} 自然数                                     [description]
  */
 
  /*
@@ -125,25 +125,111 @@ const decode = (str, chars = default_characters[62] ) => {
   return result.toString().replace(/,/g, '');
 };
 
-const bigint = (num) => {
-
+const bigint = (num, base = 62 ) => {
+  let chars = (base in default_characters ? default_characters[base] : base);
   return {
-    name: 'acb',
-    num: num,
-    str: '',
-    toString(base = 10) {
-      return decode(base);
+    chars,
+    num: num.toString(),
+    code: encode(num, chars),
+    list: [],
+    toString(base = 62) {
+      let chars = (base in default_characters ? default_characters[base] : base);
+      if (chars = this.chars) {
+        return this.num;
+      }
+      return decode(this.code, chars);
     },
-    add(n) {
+    toCode(base = 62) {
+      let chars = (base in default_characters ? default_characters[base] : base);
+      if (chars = this.chars) {
+        return this.code;
+      }
+      return encode(this.num, chars);
+    },
+    toArray() {
+      return this.code.split('').map(i => this.chars.indexOf(i));
+    },
+    getNumStr(obj) {
+      if (typeof(obj) == 'object') {
+        return obj.num;
+      }
+      return obj.toString();
+    },
+    get2List(numStr) {
+      let numA = this.num;
+      let numB = numStr;
+      let listA = numA.split('').map(i => parseInt(i));
+      let listB = numB.split('').map(i => parseInt(i));
+      let maxList = null;
+      let minList = null;
+      let selfBigger = true;
+      if (numA.length == numB.length) { // 长度相等判断大小
+        if (numA >= numB) {
+          maxList = listA;
+          minList = listB;
+        } else {
+          minList = listA;
+          maxList = listB;
+          selfBigger = false;
+        }
+      } else if (numA.length > numB.length) { // 长度不等判断长度
+        maxList = listA;
+        minList = listB;
+      } else {
+        minList = listA;
+        maxList = listB;
+        selfBigger = false;
+      }
+      return { maxList, minList, selfBigger };
+    },
+    add(n, base=10) { // 注意，特别大的数，需要传字符串 or bigint 类型
+      let numStr = this.getNumStr(n);
+      let { maxList, minList } = this.get2List(numStr);
+      for (let i=1; i<=minList.length; i++) {
+        maxList[maxList.length - i] += minList[minList.length - i];
+      }
+      for (let i=maxList.length-1; i>=0; i--) {
+        if (maxList[i] >= base) {
+          maxList[i] -= base;
+          if (i == 0) {
+            maxList.unshift(1);
+          } else {
+            maxList[i - 1] += 1;
+          }
+        }
+      }
+      this.num = maxList.toString().replace(/,/g, '');
+      this.code = encode(this.num);
       return this;
     },
-    sub(n) {
+    sub(n, base=10) {
+      let numStr = this.getNumStr(n);
+      let { maxList, minList, selfBigger } = this.get2List(numStr);
+      if (selfBigger) {
+        for (let i=1; i<=minList.length; i++) {
+          maxList[maxList.length - i] -= minList[minList.length - i];
+        }
+        for (let i=maxList.length-1; i>=0; i--) {
+          if (maxList[i] < 0) {
+            maxList[i] += base;
+            if (i == 0 && maxList[i] == 0) {
+              maxList.shift();
+            } else {
+              maxList[i - 1] -= 1;
+            }
+          }
+        }
+      } else {
+        maxList = [0];
+      }
+      this.num = maxList.toString().replace(/,/g, '');
+      this.code = encode(this.num);
       return this;
     },
-    mul(n) {
+    mul(n, base=10) { // TODO
       return this;
     },
-    div(n) {
+    div(n, base=10) { // TODO
       return this;
     }
   };
@@ -164,8 +250,9 @@ module.exports = (base = 62) => {
     return decode(str, characters);
   };
   return {
+    bigint,
     characters,
     encode: baseEncode,
-    decode: baseDecode
+    decode: baseDecode,
   };
 };
